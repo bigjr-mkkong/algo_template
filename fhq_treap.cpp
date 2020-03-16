@@ -1,166 +1,114 @@
 #include <bits/stdc++.h>
+#define INF 0x3f3f3f
 using namespace std;
-const int maxn=1e3;
-int val[maxn],key[maxn],size[maxn],ch[maxn][2],tot=0;
-int root;
-inline int rand()
-{
-	static int seed=19260817;
-    return seed=(int)seed*482711LL%2147483647;
-}
-void pushup(int x){
-	size[x]=size[ch[x][0]]+size[ch[x][1]]+1;
-	return;
-}
-void split(int root,int& x,int& y,int value){
-	if(!root){
-		x=y=0;
-		return;
-	}
-	if(val[root]<=value){
-		x=root;
-		split(ch[root][1],ch[x][1],y,value);
-	}else{ 
-		y=root;
-		split(ch[root][0],x,ch[y][0],value);
-	}
-	pushup(root);
-}
-/*
-void swap(int &a,int &b){
-	int tmp=a;
-	a=b;
-	b=tmp;
-}
-void pushdown(int x){
-	swap(ch[x][0],ch[x][1]);
-	tag[x]^=1;
-	tag[ch[x][0]]^=1;
-	tag[ch[x][1]]^=1;
-}
-void split_k(int root, int k, int& x, int& y){
-    if(!root){ x = y = 0; return; }
-    if(tag[root]) pushdown(root);
-    if(size[ch[root][0]]+1 <= k){
-        x = root;
-        split_k(ch[root][1], ch[root][1], y, k-size[ch[root][0]]-1);
-    }
-    else{
+const int maxn=1e5+10;
+int arr[maxn],n,m;
+int val[maxn],size[maxn],l[maxn],r[maxn],key[maxn],tot=0;
+struct fhq_treap {
+	int root;
 
-        y = root;
-        split_k(ch[root][0], x, ch[root][0],k);
-    }
-    pushup(root);
-}
-void merge(int& root,int x,int y){
-	if(!x||!y){
-		root=x+y;
-		return;
+	void update(int x) {
+		size[x]=size[l[x]]+size[r[x]]+1;
 	}
-	if(key[x]<key[y]){
-		if(tag[x]) pushdown(x);
-		root=x;
-		merge(ch[root][1], ch[x][1],y);
-	}else{
-		if(tag[y]) pushdown(y);
-		root=y;
-		merge(ch[root][0],x,ch[y][0]);
-	}
-	pushup(root);
-}
-void rev(int x,int y){
-	int l=0,r=0,t=0;
-	split(root,x-1,l,t);
-	split(t,y-x+1,t,r);
-	tag[t]^=1;
-	merge(l,l,t);
-	merge(root,l,t);
-}
-*/
-void merge(int& root,int x,int y){
-	if(!x||!y){
-		root=x+y;
-		return;
-	}
-	if(key[x]<key[y]){
-		root=x;
-		merge(ch[root][1], ch[x][1],y);
-	}else{
-		root=y;
-		merge(ch[root][0],x,ch[y][0]);
-	}
-	pushup(root);
-}
-void insert(int& root,int value){
-	int x=0,y=0,z=++tot;
-	val[z]=value,size[z]=1,key[z]=rand();
-	split(root,x,y,value);
-	merge(x,x,z);
-	merge(root,x,y);
-}
-void del(int& root, int value){
-	int x=0,y=0,z=0;
-	split(root,x,y,value);
-	split(x,x,z,value-1);
-	merge(z,ch[z][0],ch[z][1]);
-	merge(x,x,z);
-	merge(root,x,y);
 
-}
-int kth_big(int root, int k){
-	while(size[ch[root][0]]+1!=k){
-		if(size[ch[root][0]]>=k){
-			root=ch[root][0];
+	int merge(int x,int y) {
+		if(!x||!y) return x+y;
+		if(key[x]<key[y]) {
+			return r[x]=merge(r[x],y),update(x),x;
+		}
+		return l[y]=merge(x,l[y]),update(y),y;
+	}
+
+	void split(int x,int value,int &u,int &v) {
+		if(!x) {
+			u=v=0;
+			return;
+		}
+		if (val[x] <= value)
+			u = x, split(r[x], value, r[u], v);
+		else
+			v = x, split(l[x], value, u, l[v]);
+		update(x);
+		return;
+	}
+
+	int create(int value) {
+		val[++tot]=value;
+		key[tot]=rand();
+		size[tot]=1;
+		return tot;
+	}
+
+	int x, y, z;
+
+	void insert(int value) {
+		split(root,value,x,y);
+		root = merge(x,merge(create(value),y));
+		return;
+	}
+
+	void build(int l,int r) {
+		for(int i=l; i<=r; i++) insert(arr[i]);
+	}
+
+	void Delete(int value) {
+		split(root,value,x,z);
+		split(x,value-1,x,y);
+		y=merge(l[y],r[y]);
+		root=merge(x,merge(y,z));
+	}
+
+	int rank(int value) {
+		split(root,value-1,x,y);
+		int ans=size[x]+1;
+		root=merge(x,y);
+		return ans;
+	}
+
+	int findkey(int x, int rak) {
+		if (rak<=size[l[x]])
+			return findkey(l[x],rak);
+		if (rak==size[l[x]]+1)
+			return val[x];
+		return findkey(r[x],rak-size[l[x]]-1);
+	}
+
+	int lower(int key) {
+		split(root,key-1,x,y);
+		int ans;
+		if (size[x]) ans=findkey(x,size[x]);
+		else ans=-INF;
+		root=merge(x,y);
+		return ans;
+	}
+	
+	int upper(int key) {
+		split(root,key,x,y);
+		int ans;
+		if (size[y]) ans=findkey(y,1);
+		else ans=INF;
+		root=merge(x,y);
+		return ans;
+	}
+}ft;
+
+int main(void){
+	scanf("%d",&n);
+	for(int i=1;i<=n;i++){
+		int opt,x;
+		scanf("%d %d",&opt,&x);
+		if(opt==1){
+			ft.insert(x);
+		}else if(opt==2){
+			ft.Delete(x);
+		}else if(opt==3){
+			printf("%d\n",ft.rank(x));
+		}else if(opt==4){
+			printf("%d\n",ft.findkey(ft.root,x));
+		}else if(opt==5){
+			printf("%d\n",ft.lower(x));
 		}else{
-			k-=size[ch[root][0]]+1;
-			root=ch[root][1];
+			printf("%d\n",ft.upper(x));
 		}
 	}
-	return val[root];
-}
-int get_rank(int& root, int value){
-	int x=0,y=0;
-	split(root,x,y,value-1);
-	int res=size[x]+1;
-	merge(root,x,y);
-	return res;
-}
-int get_pre(int& root, int value){
-	int x=0,y=0;
-	split(root,x,y,value-1);
-	int res=kth_big(x,size[x]);
-	merge(root,x,y);
-	return res;
-}
-int get_suf(int& root, int value){
-	int x=0,y=0;
-	split(root,x,y,value);
-	int res=kth_big(y,1);
-	merge(root,x,y);
-	return res;
-} 
-int seg_kth_big(int root, int l, int r, int k){
-	int x=0,y=0,z=0,ans;
-	split(root,x,y,val[l]-1);
-	split(y,y,z,val[r]);
-	ans=kth_big(y,k);
-	merge(y,y,z);
-	merge(root,x,y);
-	return ans;
-} 
-int seg_get_rank(int root,int l,int r,int value){
-	int x=0,y=0,z=0,ans;
-	split(root,x,y,value-1);
-	split(y,y,z,value);
-	ans=get_rank(y,value);
-	merge(y,y,z);
-	merge(root,x,y);
-	return ans;
-} 
-int main(void){
-	memset(size,0,sizeof(size));
-	  for(int i=1;i<=20;i++){
-        insert(root,i);
-	  }
-	  printf("%d",get_suf(root,4));
 }
