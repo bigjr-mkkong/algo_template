@@ -1,12 +1,11 @@
 #include <bits/stdc++.h>
 #define ll long long
 using namespace std;
-const int maxn=100000+10;
+const int maxn=200010;
 struct node{
 	ll sum,tag;
-}t[maxn*2];
+}t[maxn<<2];
 ll arr[maxn];
-ll ans=0;
 void update(ll pos){
 	t[pos].sum=t[pos<<1].sum+t[pos<<1|1].sum;
 }
@@ -47,19 +46,14 @@ void add(ll tl,ll tr,ll l,ll r,ll v,ll pos){
 	add(tl,tr,mid+1,r,v,pos<<1|1);
 	update(pos);
 }
-void query(ll tl,ll tr,ll l,ll r,ll pos){
+ll query(ll tl,ll tr,ll l,ll r,ll pos){
 	if(tl<=l&&tr>=r){
-		ans+=t[pos].sum;
-		return;
+		return t[pos].sum;
 	}
-	if(r<tl||l>tr){
-		return;
-	}
-	ll mid=(l+r)/2;
+	if(tl>r||tr<l) return 0;
+	ll mid=(l+r)/2,res=0;
 	pushdown(l,r,pos);
-	query(tl,tr,l,mid,pos<<1);
-	query(tl,tr,mid+1,r,pos<<1|1);
-	return;
+	return query(tl,tr,l,mid,pos<<1)+query(tl,tr,mid+1,r,pos<<1|1);
 }
 int main(void){
 	ios::sync_with_stdio(false);
@@ -77,9 +71,7 @@ int main(void){
 			add(x,y,1,n,k,1);
 		}else{
 			cin>>x>>y;
-			query(x,y,1,n,1);
-			printf("%lld\n",ans);
-			ans=0;
+			cout<<query(x,y,1,n,1)<<endl;
 		}
 	}
 }
