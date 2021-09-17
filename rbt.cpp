@@ -129,4 +129,8 @@ void insertFix(int pos){
 int main(void){
     for(int i=1;i<=10;i++) 
         insert(i);
+    
+    for(int i=1;i<=10;i++){
+        printf("%d ",rbt[i].val);
+    }
 }
