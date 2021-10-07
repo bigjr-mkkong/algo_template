@@ -72,6 +72,7 @@ int _insert(int pos,int val,int fa){
 }
 
 int findNode(int pos,int val){
+    if(pos==0) return 0;
     if(rbt[pos].val==val) return pos;
 
     if(rbt[pos].val>val) return findNode(rbt[pos].ch[0],val);
@@ -126,11 +127,26 @@ void insertFix(int pos){
     rbt[root].color=BLACK;
 }
 
-int main(void){
-    for(int i=1;i<=10;i++) 
-        insert(i);
-    
-    for(int i=1;i<=10;i++){
-        printf("%d ",rbt[i].val);
+void _removeNode(int pos){
+    if(rbt[pos].ch[0]==0&&rbt[pos].ch[1]!=0){//only have right child
+        
+    }else if(rbt[pos].ch[1]==0&&rbt[pos].ch[0]!=0){//only have left child
+
     }
+}
+
+
+void removeNode(int pos,int val){
+    int k=findNode(root,val);
+    if(k==0){
+        printf("cannot find the tree node with value: %d",val);
+        return;
+    }
+    _removeNode(k);
+}
+
+
+int main(void){
+    for(int i=1;i<=10;i++) insert(i);
+    printf("%d",rbt[3].val);   
 }
