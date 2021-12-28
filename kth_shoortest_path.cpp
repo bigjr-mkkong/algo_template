@@ -14,7 +14,7 @@ bool operator < (const edge & a) const {
 };
 struct node{
 	int f,now,len;
-	bool operator < (const node &rhs) const {//Ð¡¸ù¶Ñ 
+	bool operator < (const node &rhs) const {//ÃÂ¡Â¸Ã¹Â¶Ã‘ 
         return f > rhs.f;
     }
 };
